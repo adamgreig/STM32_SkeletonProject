@@ -1,0 +1,47 @@
+This is a skeleton project for an STM32F10x series device, using the
+CodeSourcery compiler suite. It is initially configured for a medium density
+STM32F103. To change target device, edit:
+	
+    stm.ld: update RAM and FLASH sizes in the MEMORY section
+	makefile: update variables at the top of the file
+	lib/CMSIS/system_stm32f10x.c: set system clock frequency and periphal
+		frequencies as fractions of the system clock
+
+Put interrupt vectors into interrupts.c (and prototypes into .h) or any other
+c file which will be compiled into the final binary. Valid interrupt vector
+names are given in lib/CMSIS/startup/gcc/startup_stm32f10x_*.s at the bottom.
+
+Update lib/STM32F10x_StdPeriph_Driver/stm32f10x_conf.h to set which peripheral
+functions you wish to use from the library.
+
+If using the USB library, you may need to edit lib/STM32_USB-FS-Device_Driver/
+usb_conf.h depending on your application.
+
+A python script to send binary images to an STM32 via the serial bootloader
+is also included. Edit appropriate settings in the makefile and make sure BOOT0
+is pulled high on reset, then 'make reload'. Change BOOT0 to low to boot from
+flash memory after bootloading.
+
+JTAG configuration files are provided but untested and may require modification
+for your programmer or device type.
+
+
+COPYRIGHT/LICENSE DETAILS:
+
+ * STM32 libraries copyright 2009 STMicroelectronics.
+   License details given in each source file.
+
+ * CMSIS library and code copyright ARM and STMicroelectronics.
+   License details given in each source file.
+
+ * Linker script copyright RAISONANCE S.A.S. 2008 and modified by P Harrison of
+   http://www.micromouseonline.com
+
+ * Makefiles and JTAG configuration based on those released into the public domain
+   by Lanchon of the ST forums.
+
+ * stm32loader.py released by Ivan A-R of
+   http://tuxotronic.org/wiki/projects/stm32loader and modified by P Harrison.
+
+ * Compilation by Adam Greig of https://randomskk.net and released into the
+   public domain, September 2009.
