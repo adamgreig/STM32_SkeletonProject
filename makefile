@@ -96,7 +96,7 @@ all: $(MAIN_BIN)
 # main
 
 $(MAIN_OUT): $(MAIN_OBJS) $(FWLIB) $(USBLIB)
-    $(LD) $(LDFLAGS) $(TARGET_ARCH) $^ -o $@
+	$(LD) $(LDFLAGS) $(TARGET_ARCH) $^ -o $@
 
 $(MAIN_OBJS): $(wildcard *.h) $(wildcard lib/STM32F10x_StdPeriph_Driver/*.h)\
  $(wildcard lib/STM32F10x_StdPeriph_Driver/inc/*.h)\
@@ -104,7 +104,7 @@ $(MAIN_OBJS): $(wildcard *.h) $(wildcard lib/STM32F10x_StdPeriph_Driver/*.h)\
  $(wildcard lib/STM32_USB-FS-Device_Driver/inc/*.h)
 
 $(MAIN_BIN): $(MAIN_OUT)
-    $(OBJCOPY) $(OBJCOPYFLAGS) $< $@
+	$(OBJCOPY) $(OBJCOPYFLAGS) $< $@
 
 
 # fwlib
@@ -114,7 +114,7 @@ fwlib: $(FWLIB)
 
 $(FWLIB): $(wildcard lib/STM32F10x_StdPeriph_Driver/*.h)\
  $(wildcard lib/STM32F10x_StdPeriph_Driver/inc/*.h)
-    @cd lib/STM32F10x_StdPeriph_Driver && $(MAKE)
+	@cd lib/STM32F10x_StdPeriph_Driver && $(MAKE)
 
 # usblib
 
@@ -122,7 +122,7 @@ $(FWLIB): $(wildcard lib/STM32F10x_StdPeriph_Driver/*.h)\
 usblib: $(USBLIB)
 
 $(USBLIB): $(wildcard lib/STM32_USB-FS-Device_Driver/inc*.h)
-    @cd lib/STM32_USB-FS-Device_Driver && $(MAKE)
+	@cd lib/STM32_USB-FS-Device_Driver && $(MAKE)
 
 # flash
 
@@ -132,27 +132,27 @@ flash: flash-elf
 
 .PHONY: flash-elf
 flash-elf: all
-    @cp $(MAIN_OUT) jtag/flash.elf
-    @cd jtag && openocd -f flash-elf.cfg
-    @rm jtag/flash.elf
+	@cp $(MAIN_OUT) jtag/flash.elf
+	@cd jtag && openocd -f flash-elf.cfg
+	@rm jtag/flash.elf
 
 .PHONY: flash-bin
 flash-bin: all
-    @cp $(MAIN_BIN) jtag/flash.bin
-    @cd jtag && openocd -f flash-bin.cfg
-    @rm jtag/flash.bin
+	@cp $(MAIN_BIN) jtag/flash.bin
+	@cd jtag && openocd -f flash-bin.cfg
+	@rm jtag/flash.bin
 
 .PHONY: upload
 upload: all
-    @python jtag/stm32loader.py -p $(STM32LDR_PORT) -b $(STM32LDR_BAUD)\
-    -e $(STM32LDR_VERIFY) -w main.bin
+	@python jtag/stm32loader.py -p $(STM32LDR_PORT) -b $(STM32LDR_BAUD)\
+	-e $(STM32LDR_VERIFY) -w main.bin
 
 
 # clean
 
 .PHONY: clean
 clean:
-    -rm -f $(MAIN_OBJS) $(MAIN_OUT) $(MAIN_MAP) $(MAIN_BIN)
-    -rm -f jtag/flash.elf jtag/flash.bin
-    @cd lib/STM32F10x_StdPeriph_Driver && $(MAKE) clean
-    @cd lib/STM32_USB-FS-Device_Driver && $(MAKE) clean
+	-rm -f $(MAIN_OBJS) $(MAIN_OUT) $(MAIN_MAP) $(MAIN_BIN)
+	-rm -f jtag/flash.elf jtag/flash.bin
+	@cd lib/STM32F10x_StdPeriph_Driver && $(MAKE) clean
+	@cd lib/STM32_USB-FS-Device_Driver && $(MAKE) clean
