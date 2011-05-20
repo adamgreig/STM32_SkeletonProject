@@ -9,8 +9,8 @@ STARTUP_FILE = stm32f10x_md
 #STARTUP_FILE = stm32f10x_hd
 #DEVICE_TYPE = STM32F10X_LD_VL
 #STARTUP_FILE = stm32f10x_ld_vl
-DEVICE_TYPE = STM32F10X_MD_VL
-STARTUP_FILE = stm32f10x_md_vl
+#DEVICE_TYPE = STM32F10X_MD_VL
+#STARTUP_FILE = stm32f10x_md_vl
 #DEVICE_TYPE = STM32F10X_HD_VL
 #STARTUP_FILE = stm32f10x_hd_vl
 #DEVICE_TYPE = STM32F10X_XL
@@ -32,6 +32,9 @@ STM32LDR_VERIFY = -v
 
 # [OPTIONAL] Uncomment to use the firmware library
 FWLIB = lib/STM32F10x_StdPeriph_Driver/libstm32fw.a
+# [OPTIONAL] Uncomment to enable peripheral drivers
+#             (instead of direct register access)
+USE_STDPERIPH_DRIVER = -DUSE_STDPERIPH_DRIVER
 # [OPTIONAL] Uncomment to use the USB library
 #USBLIB = lib/STM32_USB-FS-Device_Driver/libstm32usb.a
 
@@ -50,7 +53,9 @@ INCLUDE_DIRS = -I . -I lib/STM32F10x_StdPeriph_Driver/inc\
 LIBRARY_DIRS = -L lib/STM32F10x_StdPeriph_Driver/\
  -L lib/STM32_USB-FS-Device_Driver
 
-DEFINES = -D$(DEVICE_TYPE) -DHSE_Value=$(HSE_VALUE)
+DEFINES = -D$(DEVICE_TYPE) -DHSE_VALUE=$(HSE_VALUE) $(USE_STDPERIPH_DRIVER)
+
+export DEFINES
 
 COMPILE_OPTS = $(WARNINGS) $(TARGET_OPTS) $(MESSAGES) $(INCLUDE_DIRS) $(DEFINES)
 WARNINGS = -Wall -W -Wshadow -Wcast-qual -Wwrite-strings -Winline
@@ -161,6 +166,7 @@ upload: all
 .PHONY: clean
 clean:
 	-rm -f $(MAIN_OBJS) $(MAIN_OUT) $(MAIN_MAP) $(MAIN_BIN)
+	-rm -f lib/CMSIS_CM3/startup/gcc/*.o
 	-rm -f jtag/flash.elf jtag/flash.bin
 	@cd lib/STM32F10x_StdPeriph_Driver && $(MAKE) clean
 	@cd lib/STM32_USB-FS-Device_Driver && $(MAKE) clean
