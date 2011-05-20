@@ -430,7 +430,7 @@ if __name__ == "__main__":
 #            file(conf['fname'], 'wb').write(rdata)
             file(args[0], 'wb').write(''.join(map(chr,rdata)))
 
-#    cmd.cmdGo(addr + 0x04)
+        cmd.cmdGo(conf['address'])
     finally:
         cmd.releaseChip()
 
