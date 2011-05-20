@@ -157,7 +157,7 @@ flash-bin: all
 
 .PHONY: upload
 upload: all
-	@python jtag/stm32loader.py -p $(STM32LDR_PORT) -b $(STM32LDR_BAUD)\
+	@python jtag/stm32loader.py -p $(STM32LDR_PORT) -b $(STM32LDR_BAUD) \
 	-e $(STM32LDR_VERIFY) -w main.bin
 
 
