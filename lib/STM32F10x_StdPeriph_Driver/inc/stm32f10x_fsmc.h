@@ -2,12 +2,12 @@
   ******************************************************************************
   * @file    stm32f10x_fsmc.h
   * @author  MCD Application Team
-  * @version V3.1.0
-  * @date    06/19/2009
+  * @version V3.5.0
+  * @date    11-March-2011
   * @brief   This file contains all the functions prototypes for the FSMC firmware 
   *          library.
   ******************************************************************************
-  * @copy
+  * @attention
   *
   * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
   * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
@@ -16,8 +16,9 @@
   * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
   * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
   *
-  * <h2><center>&copy; COPYRIGHT 2009 STMicroelectronics</center></h2>
-  */ 
+  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+  ******************************************************************************
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __STM32F10x_FSMC_H
@@ -76,7 +77,7 @@ typedef struct
                                              to the memory before getting the first data.
                                              The value of this parameter depends on the memory type as shown below:
                                               - It must be set to 0 in case of a CRAM
-                                              - It is don’t care in asynchronous NOR, SRAM or ROM accesses
+                                              - It is don't care in asynchronous NOR, SRAM or ROM accesses
                                               - It may assume a value between 0 and 0xF in NOR Flash memories
                                                 with synchronous burst mode enable */
 
@@ -107,6 +108,10 @@ typedef struct
   uint32_t FSMC_BurstAccessMode;     /*!< Enables or disables the burst access mode for Flash memory,
                                           valid only with synchronous burst Flash memories.
                                           This parameter can be a value of @ref FSMC_Burst_Access_Mode */
+                                       
+  uint32_t FSMC_AsynchronousWait;     /*!< Enables or disables wait signal during asynchronous transfers,
+                                          valid only with asynchronous Flash memories.
+                                          This parameter can be a value of @ref FSMC_AsynchronousWait */
 
   uint32_t FSMC_WaitSignalPolarity;  /*!< Specifies the wait signal polarity, valid only when accessing
                                           the Flash memory in burst mode.
@@ -338,7 +343,19 @@ typedef struct
 /**
   * @}
   */
+  
+/** @defgroup FSMC_AsynchronousWait 
+  * @{
+  */
+#define FSMC_AsynchronousWait_Disable                   ((uint32_t)0x00000000)
+#define FSMC_AsynchronousWait_Enable                    ((uint32_t)0x00008000)
+#define IS_FSMC_ASYNWAIT(STATE) (((STATE) == FSMC_AsynchronousWait_Disable) || \
+                                 ((STATE) == FSMC_AsynchronousWait_Enable))
 
+/**
+  * @}
+  */
+  
 /** @defgroup FSMC_Wait_Signal_Polarity 
   * @{
   */
@@ -713,4 +730,4 @@ void FSMC_ClearITPendingBit(uint32_t FSMC_Bank, uint32_t FSMC_IT);
   * @}
   */ 
 
-/******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/
+/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

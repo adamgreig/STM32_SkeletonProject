@@ -1,30 +1,32 @@
 /**
- ******************************************************************************
- * @file      startup_stm32f10x_md.s
- * @author    MCD Application Team
- * @version   V3.1.0
- * @date      06/19/2009
- * @brief     STM32F10x Medium Density Devices vector table for RIDE7 toolchain.
- *            This module performs:
- *                - Set the initial SP
- *                - Set the initial PC == Reset_Handler,
- *                - Set the vector table entries with the exceptions ISR address
- *                - Branches to main in the C library (which eventually
- *                  calls main()).
- *            After Reset the Cortex-M3 processor is in Thread mode,
- *            priority is Privileged, and the Stack is set to Main.
- *******************************************************************************
- * @copy
- *
- * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
- * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
- * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
- * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
- * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
- * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
- *
- * <h2><center>&copy; COPYRIGHT 2009 STMicroelectronics</center></h2>
- */	
+  ******************************************************************************
+  * @file      startup_stm32f10x_md.s
+  * @author    MCD Application Team
+  * @version   V3.5.0
+  * @date      11-March-2011
+  * @brief     STM32F10x Medium Density Devices vector table for RIDE7 toolchain.
+  *            This module performs:
+  *                - Set the initial SP
+  *                - Set the initial PC == Reset_Handler,
+  *                - Set the vector table entries with the exceptions ISR address
+  *                - Configure the clock system 
+  *                - Branches to main in the C library (which eventually
+  *                  calls main()).
+  *            After Reset the Cortex-M3 processor is in Thread mode,
+  *            priority is Privileged, and the Stack is set to Main.
+  ******************************************************************************
+  * @attention
+  *
+  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+  *
+  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+  ******************************************************************************
+  */
     
   .syntax unified
 	.cpu cortex-m3
@@ -32,7 +34,6 @@
 	.thumb
 
 .global	g_pfnVectors
-.global	SystemInit_ExtMemCtl_Dummy
 .global	Default_Handler
 
 /* start address for the initialization values of the .data section. 
@@ -89,6 +90,8 @@ LoopFillZerobss:
 	ldr	r3, = _ebss
 	cmp	r2, r3
 	bcc	FillZerobss
+/* Call the clock system intitialization function.*/
+  bl  SystemInit 	
 /* Call the application's entry point.*/
 	bl	main
 	bx	lr    
@@ -96,11 +99,10 @@ LoopFillZerobss:
 
 /**
  * @brief  This is the code that gets called when the processor receives an 
- *         unexpected interrupt.  This simply enters an infinite loop, preserving
+ *         unexpected interrupt. This simply enters an infinite loop, preserving
  *         the system state for examination by a debugger.
- *
  * @param  None     
- * @retval : None       
+ * @retval None       
 */
     .section	.text.Default_Handler,"ax",%progbits
 Default_Handler:
@@ -353,4 +355,4 @@ g_pfnVectors:
 	.weak	USBWakeUp_IRQHandler
 	.thumb_set USBWakeUp_IRQHandler,Default_Handler
 
-
+/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

@@ -2,11 +2,11 @@
   ******************************************************************************
   * @file    stm32f10x_dbgmcu.c
   * @author  MCD Application Team
-  * @version V3.1.0
-  * @date    06/19/2009
+  * @version V3.5.0
+  * @date    11-March-2011
   * @brief   This file provides all the DBGMCU firmware functions.
   ******************************************************************************
-  * @copy
+  * @attention
   *
   * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
   * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
@@ -15,8 +15,9 @@
   * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
   * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
   *
-  * <h2><center>&copy; COPYRIGHT 2009 STMicroelectronics</center></h2>
-  */ 
+  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+  ******************************************************************************
+  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_dbgmcu.h"
@@ -42,7 +43,7 @@
   * @{
   */
 
-#define IDCODE_DEVID_Mask    ((uint32_t)0x00000FFF)
+#define IDCODE_DEVID_MASK    ((uint32_t)0x00000FFF)
 /**
   * @}
   */
@@ -92,7 +93,7 @@ uint32_t DBGMCU_GetREVID(void)
   */
 uint32_t DBGMCU_GetDEVID(void)
 {
-   return(DBGMCU->IDCODE & IDCODE_DEVID_Mask);
+   return(DBGMCU->IDCODE & IDCODE_DEVID_MASK);
 }
 
 /**
@@ -116,7 +117,16 @@ uint32_t DBGMCU_GetDEVID(void)
   *     @arg DBGMCU_TIM6_STOP: TIM6 counter stopped when Core is halted          
   *     @arg DBGMCU_TIM7_STOP: TIM7 counter stopped when Core is halted          
   *     @arg DBGMCU_TIM8_STOP: TIM8 counter stopped when Core is halted
-  *     @arg DBGMCU_CAN2_STOP: Debug CAN2 stopped when Core is halted           
+  *     @arg DBGMCU_CAN2_STOP: Debug CAN2 stopped when Core is halted 
+  *     @arg DBGMCU_TIM15_STOP: TIM15 counter stopped when Core is halted
+  *     @arg DBGMCU_TIM16_STOP: TIM16 counter stopped when Core is halted
+  *     @arg DBGMCU_TIM17_STOP: TIM17 counter stopped when Core is halted                
+  *     @arg DBGMCU_TIM9_STOP: TIM9 counter stopped when Core is halted
+  *     @arg DBGMCU_TIM10_STOP: TIM10 counter stopped when Core is halted
+  *     @arg DBGMCU_TIM11_STOP: TIM11 counter stopped when Core is halted
+  *     @arg DBGMCU_TIM12_STOP: TIM12 counter stopped when Core is halted
+  *     @arg DBGMCU_TIM13_STOP: TIM13 counter stopped when Core is halted
+  *     @arg DBGMCU_TIM14_STOP: TIM14 counter stopped when Core is halted
   * @param  NewState: new state of the specified peripheral in Debug mode.
   *   This parameter can be: ENABLE or DISABLE.
   * @retval None
@@ -149,4 +159,4 @@ void DBGMCU_Config(uint32_t DBGMCU_Periph, FunctionalState NewState)
   * @}
   */
 
-/******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/
+/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

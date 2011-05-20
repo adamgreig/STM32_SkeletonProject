@@ -2,11 +2,11 @@
   ******************************************************************************
   * @file    stm32f10x_usart.c
   * @author  MCD Application Team
-  * @version V3.1.0
-  * @date    06/19/2009
+  * @version V3.5.0
+  * @date    11-March-2011
   * @brief   This file provides all the USART firmware functions.
   ******************************************************************************
-  * @copy
+  * @attention
   *
   * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
   * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
@@ -15,8 +15,9 @@
   * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
   * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
   *
-  * <h2><center>&copy; COPYRIGHT 2009 STMicroelectronics</center></h2>
-  */ 
+  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+  ******************************************************************************
+  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_usart.h"
@@ -79,6 +80,14 @@
 #define GTPR_MSB_Mask             ((uint16_t)0xFF00)  /*!< Guard Time Register MSB Mask */
 #define IT_Mask                   ((uint16_t)0x001F)  /*!< USART Interrupt Mask */
 
+/* USART OverSampling-8 Mask */
+#define CR1_OVER8_Set             ((u16)0x8000)  /* USART OVER8 mode Enable Mask */
+#define CR1_OVER8_Reset           ((u16)0x7FFF)  /* USART OVER8 mode Disable Mask */
+
+/* USART One Bit Sampling Mask */
+#define CR3_ONEBITE_Set           ((u16)0x0800)  /* USART ONEBITE mode Enable Mask */
+#define CR3_ONEBITE_Reset         ((u16)0xF7FF)  /* USART ONEBITE mode Disable Mask */
+
 /**
   * @}
   */
@@ -114,7 +123,8 @@
 /**
   * @brief  Deinitializes the USARTx peripheral registers to their default reset values.
   * @param  USARTx: Select the USART or the UART peripheral. 
-  *   This parameter can be one of the following values: USART1, USART2, USART3, UART4 or UART5.
+  *   This parameter can be one of the following values: 
+  *      USART1, USART2, USART3, UART4 or UART5.
   * @retval None
   */
 void USART_DeInit(USART_TypeDef* USARTx)
@@ -154,12 +164,13 @@ void USART_DeInit(USART_TypeDef* USARTx)
 
 /**
   * @brief  Initializes the USARTx peripheral according to the specified
-  *   parameters in the USART_InitStruct .
+  *         parameters in the USART_InitStruct .
   * @param  USARTx: Select the USART or the UART peripheral. 
   *   This parameter can be one of the following values:
   *   USART1, USART2, USART3, UART4 or UART5.
   * @param  USART_InitStruct: pointer to a USART_InitTypeDef structure
-  *   that contains the configuration information for the specified USART peripheral.
+  *         that contains the configuration information for the specified USART 
+  *         peripheral.
   * @retval None
   */
 void USART_Init(USART_TypeDef* USARTx, USART_InitTypeDef* USART_InitStruct)
@@ -230,12 +241,33 @@ void USART_Init(USART_TypeDef* USARTx, USART_InitTypeDef* USART_InitStruct)
   {
     apbclock = RCC_ClocksStatus.PCLK1_Frequency;
   }
+  
   /* Determine the integer part */
-  integerdivider = ((0x19 * apbclock) / (0x04 * (USART_InitStruct->USART_BaudRate)));
-  tmpreg = (integerdivider / 0x64) << 0x04;
+  if ((USARTx->CR1 & CR1_OVER8_Set) != 0)
+  {
+    /* Integer part computing in case Oversampling mode is 8 Samples */
+    integerdivider = ((25 * apbclock) / (2 * (USART_InitStruct->USART_BaudRate)));    
+  }
+  else /* if ((USARTx->CR1 & CR1_OVER8_Set) == 0) */
+  {
+    /* Integer part computing in case Oversampling mode is 16 Samples */
+    integerdivider = ((25 * apbclock) / (4 * (USART_InitStruct->USART_BaudRate)));    
+  }
+  tmpreg = (integerdivider / 100) << 4;
+
   /* Determine the fractional part */
-  fractionaldivider = integerdivider - (0x64 * (tmpreg >> 0x04));
-  tmpreg |= ((((fractionaldivider * 0x10) + 0x32) / 0x64)) & ((uint8_t)0x0F);
+  fractionaldivider = integerdivider - (100 * (tmpreg >> 4));
+
+  /* Implement the fractional part in the register */
+  if ((USARTx->CR1 & CR1_OVER8_Set) != 0)
+  {
+    tmpreg |= ((((fractionaldivider * 8) + 50) / 100)) & ((uint8_t)0x07);
+  }
+  else /* if ((USARTx->CR1 & CR1_OVER8_Set) == 0) */
+  {
+    tmpreg |= ((((fractionaldivider * 16) + 50) / 100)) & ((uint8_t)0x0F);
+  }
+  
   /* Write to USART BRR */
   USARTx->BRR = (uint16_t)tmpreg;
 }
@@ -243,7 +275,7 @@ void USART_Init(USART_TypeDef* USARTx, USART_InitTypeDef* USART_InitStruct)
 /**
   * @brief  Fills each USART_InitStruct member with its default value.
   * @param  USART_InitStruct: pointer to a USART_InitTypeDef structure
-  *   which will be initialized.
+  *         which will be initialized.
   * @retval None
   */
 void USART_StructInit(USART_InitTypeDef* USART_InitStruct)
@@ -259,12 +291,12 @@ void USART_StructInit(USART_InitTypeDef* USART_InitStruct)
 
 /**
   * @brief  Initializes the USARTx peripheral Clock according to the 
-  *   specified parameters in the USART_ClockInitStruct .
+  *          specified parameters in the USART_ClockInitStruct .
   * @param  USARTx: where x can be 1, 2, 3 to select the USART peripheral.
   * @param  USART_ClockInitStruct: pointer to a USART_ClockInitTypeDef
-  *   structure that contains the configuration information for the specified 
-  *   USART peripheral.  
-  * @note The Smart Card mode is not available for UART4 and UART5.
+  *         structure that contains the configuration information for the specified 
+  *         USART peripheral.  
+  * @note The Smart Card and Synchronous modes are not available for UART4 and UART5.
   * @retval None
   */
 void USART_ClockInit(USART_TypeDef* USARTx, USART_ClockInitTypeDef* USART_ClockInitStruct)
@@ -295,7 +327,7 @@ void USART_ClockInit(USART_TypeDef* USARTx, USART_ClockInitTypeDef* USART_ClockI
 /**
   * @brief  Fills each USART_ClockInitStruct member with its default value.
   * @param  USART_ClockInitStruct: pointer to a USART_ClockInitTypeDef
-  *   structure which will be initialized.
+  *         structure which will be initialized.
   * @retval None
   */
 void USART_ClockStructInit(USART_ClockInitTypeDef* USART_ClockInitStruct)
@@ -310,10 +342,10 @@ void USART_ClockStructInit(USART_ClockInitTypeDef* USART_ClockInitStruct)
 /**
   * @brief  Enables or disables the specified USART peripheral.
   * @param  USARTx: Select the USART or the UART peripheral. 
-  *   This parameter can be one of the following values:
-  *   USART1, USART2, USART3, UART4 or UART5.
+  *         This parameter can be one of the following values:
+  *           USART1, USART2, USART3, UART4 or UART5.
   * @param  NewState: new state of the USARTx peripheral.
-  *   This parameter can be: ENABLE or DISABLE.
+  *         This parameter can be: ENABLE or DISABLE.
   * @retval None
   */
 void USART_Cmd(USART_TypeDef* USARTx, FunctionalState NewState)
@@ -343,7 +375,7 @@ void USART_Cmd(USART_TypeDef* USARTx, FunctionalState NewState)
   *   This parameter can be one of the following values:
   *     @arg USART_IT_CTS:  CTS change interrupt (not available for UART4 and UART5)
   *     @arg USART_IT_LBD:  LIN Break detection interrupt
-  *     @arg USART_IT_TXE:  Tansmit Data Register empty interrupt
+  *     @arg USART_IT_TXE:  Transmit Data Register empty interrupt
   *     @arg USART_IT_TC:   Transmission complete interrupt
   *     @arg USART_IT_RXNE: Receive Data register not empty interrupt
   *     @arg USART_IT_IDLE: Idle line detection interrupt
@@ -402,20 +434,21 @@ void USART_ITConfig(USART_TypeDef* USARTx, uint16_t USART_IT, FunctionalState Ne
   * @brief  Enables or disables the USART’s DMA interface.
   * @param  USARTx: Select the USART or the UART peripheral. 
   *   This parameter can be one of the following values:
-  *   USART1, USART2, USART3 or UART4.  
+  *   USART1, USART2, USART3, UART4 or UART5.
   * @param  USART_DMAReq: specifies the DMA request.
   *   This parameter can be any combination of the following values:
   *     @arg USART_DMAReq_Tx: USART DMA transmit request
   *     @arg USART_DMAReq_Rx: USART DMA receive request
   * @param  NewState: new state of the DMA Request sources.
   *   This parameter can be: ENABLE or DISABLE.
-  * @note The DMA mode is not available for UART5.  
+  * @note The DMA mode is not available for UART5 except in the STM32
+  *       High density value line devices(STM32F10X_HD_VL).  
   * @retval None
   */
 void USART_DMACmd(USART_TypeDef* USARTx, uint16_t USART_DMAReq, FunctionalState NewState)
 {
   /* Check the parameters */
-  assert_param(IS_USART_1234_PERIPH(USARTx));
+  assert_param(IS_USART_ALL_PERIPH(USARTx));
   assert_param(IS_USART_DMAREQ(USART_DMAReq));  
   assert_param(IS_FUNCTIONAL_STATE(NewState)); 
   if (NewState != DISABLE)
@@ -713,8 +746,66 @@ void USART_HalfDuplexCmd(USART_TypeDef* USARTx, FunctionalState NewState)
   }
 }
 
+
 /**
-  * @brief  Configures the USART’s IrDA interface.
+  * @brief  Enables or disables the USART's 8x oversampling mode.
+  * @param  USARTx: Select the USART or the UART peripheral.
+  *   This parameter can be one of the following values:
+  *   USART1, USART2, USART3, UART4 or UART5.
+  * @param  NewState: new state of the USART one bit sampling method.
+  *   This parameter can be: ENABLE or DISABLE.
+  * @note
+  *     This function has to be called before calling USART_Init()
+  *     function in order to have correct baudrate Divider value.   
+  * @retval None
+  */
+void USART_OverSampling8Cmd(USART_TypeDef* USARTx, FunctionalState NewState)
+{
+  /* Check the parameters */
+  assert_param(IS_USART_ALL_PERIPH(USARTx));
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+  
+  if (NewState != DISABLE)
+  {
+    /* Enable the 8x Oversampling mode by setting the OVER8 bit in the CR1 register */
+    USARTx->CR1 |= CR1_OVER8_Set;
+  }
+  else
+  {
+    /* Disable the 8x Oversampling mode by clearing the OVER8 bit in the CR1 register */
+    USARTx->CR1 &= CR1_OVER8_Reset;
+  }
+}
+
+/**
+  * @brief  Enables or disables the USART's one bit sampling method.
+  * @param  USARTx: Select the USART or the UART peripheral.
+  *   This parameter can be one of the following values:
+  *   USART1, USART2, USART3, UART4 or UART5.
+  * @param  NewState: new state of the USART one bit sampling method.
+  *   This parameter can be: ENABLE or DISABLE.
+  * @retval None
+  */
+void USART_OneBitMethodCmd(USART_TypeDef* USARTx, FunctionalState NewState)
+{
+  /* Check the parameters */
+  assert_param(IS_USART_ALL_PERIPH(USARTx));
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+  
+  if (NewState != DISABLE)
+  {
+    /* Enable the one bit method by setting the ONEBITE bit in the CR3 register */
+    USARTx->CR3 |= CR3_ONEBITE_Set;
+  }
+  else
+  {
+    /* Disable tthe one bit method by clearing the ONEBITE bit in the CR3 register */
+    USARTx->CR3 &= CR3_ONEBITE_Reset;
+  }
+}
+
+/**
+  * @brief  Configures the USART's IrDA interface.
   * @param  USARTx: Select the USART or the UART peripheral. 
   *   This parameter can be one of the following values:
   *   USART1, USART2, USART3, UART4 or UART5.
@@ -735,7 +826,7 @@ void USART_IrDAConfig(USART_TypeDef* USARTx, uint16_t USART_IrDAMode)
 }
 
 /**
-  * @brief  Enables or disables the USART’s IrDA interface.
+  * @brief  Enables or disables the USART's IrDA interface.
   * @param  USARTx: Select the USART or the UART peripheral. 
   *   This parameter can be one of the following values:
   *   USART1, USART2, USART3, UART4 or UART5.
@@ -910,7 +1001,7 @@ ITStatus USART_GetITStatus(USART_TypeDef* USARTx, uint16_t USART_IT)
 }
 
 /**
-  * @brief  Clears the USARTx’s interrupt pending bits.
+  * @brief  Clears the USARTx's interrupt pending bits.
   * @param  USARTx: Select the USART or the UART peripheral. 
   *   This parameter can be one of the following values:
   *   USART1, USART2, USART3, UART4 or UART5.
@@ -964,4 +1055,4 @@ void USART_ClearITPendingBit(USART_TypeDef* USARTx, uint16_t USART_IT)
   * @}
   */
 
-/******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/
+/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
