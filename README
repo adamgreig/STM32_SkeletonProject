@@ -1,3 +1,14 @@
+Update 27 Aug 2013:
+These days I would recommend using gcc-arm-embedded [1] with libopenCM3 [2]
+to provide everything you need to build projects for STM32 chips! Years ago
+all this faffing around was required but today these projects make life
+much much happier.
+
+[1] https://launchpad.net/gcc-arm-embedded
+[2] http://libopencm3.org/wiki/Main_Page
+
+Original:
+
 This is a skeleton project for an STM32F10x series device, using the
 GCC compiler (either vanilla or CodeSourcery).
 
