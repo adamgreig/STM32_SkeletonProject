@@ -17,7 +17,7 @@ To change target device, edit:
 	
     stm.ld: update RAM and FLASH sizes in the MEMORY section
     makefile: update variables at the top of the file
-    lib/CMSIS/system_stm32f10x.c: set system clock frequency and periphal
+    lib/CMSIS_CM3/system_stm32f10x.c: set system clock frequency and periphal
                                 frequencies as fractions of the system clock
 
 Put interrupt vectors into interrupts.c (and prototypes into .h) or any other
